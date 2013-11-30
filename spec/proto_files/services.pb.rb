@@ -38,13 +38,41 @@ module Services
     set_fully_qualified_name "services.FooBarService"
 
     rpc :get_foo, "GetFoo", ::Services::FooRequest, ::Services::FooResponse
+    def get_foo(message)
+      ensure_handler_defined!
+      ensure_correct_request_type!(:get_foo, message)
+      raw_reponse = @handler.send(:get_foo, message.to_hash)
+      types_for(:get_foo)[:response].new(raw_reponse)
+    end
+
     rpc :get_bar, "GetBar", ::Services::BarRequest, ::Services::BarResponse
+    def get_bar(message)
+      ensure_handler_defined!
+      ensure_correct_request_type!(:get_bar, message)
+      raw_reponse = @handler.send(:get_bar, message.to_hash)
+      types_for(:get_bar)[:response].new(raw_reponse)
+    end
+
   end
   class NoNameFooBarService < ::ProtocolBuffers::Service
-    # purposefully removing qualified name to make sure that nothing breaks
+    #purposefully removing qualified name to make sure that nothing breaks
     #set_fully_qualified_name "services.NoNameFooBarService"
 
     rpc :get_foo, "GetFoo", ::Services::FooRequest, ::Services::FooResponse
+    def get_foo(message)
+      ensure_handler_defined!
+      ensure_correct_request_type!(:get_foo, message)
+      raw_reponse = @handler.send(:get_foo, message.to_hash)
+      types_for(:get_foo)[:response].new(raw_reponse)
+    end
+
     rpc :get_bar, "GetBar", ::Services::BarRequest, ::Services::BarResponse
+    def get_bar(message)
+      ensure_handler_defined!
+      ensure_correct_request_type!(:get_bar, message)
+      raw_reponse = @handler.send(:get_bar, message.to_hash)
+      types_for(:get_bar)[:response].new(raw_reponse)
+    end
+
   end
 end

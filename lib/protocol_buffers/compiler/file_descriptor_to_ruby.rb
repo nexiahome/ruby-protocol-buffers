@@ -1,5 +1,6 @@
 require 'protocol_buffers/compiler/descriptor.pb'
 require 'stringio'
+require 'protocol_buffers/compiler/fully_qualified_name'
 
 class FileDescriptorToRuby < Struct.new(:descriptor)
 
@@ -46,7 +47,7 @@ HEADER
         dump_service(descriptor.package, service)
       end
     end
-    
+
   end
 
   protected
@@ -77,11 +78,11 @@ HEADER
     end
     @io.write("\n")
   end
-  
+
   def in_namespace(type, namespace, rest = "")
-    
+
     namespace_array = [namespace].flatten
-    
+
     namespace_array.each do |n|
       line "#{type} #{camelize(n)}#{rest}"
       @ns.push n
@@ -170,23 +171,28 @@ HEADER
     line
   end
 
-  def dump_service(package, service)
+def dump_service(package, service)
     in_namespace("class", service.name, " < ::ProtocolBuffers::Service") do
       fully_qualified_name = fully_qualified_name(package, service.name)
       line %{set_fully_qualified_name "#{fully_qualified_name}"}
       line
       service.method.each do |method|
         line %{rpc :#{underscore(method.name)}, "#{method.name}", #{service_typename(method.input_type)}, #{service_typename(method.output_type)}}
+        unless fully_qualified_name.nil?
+          line %{def #{underscore(method.name)}(message)}
+          line %{  ensure_handler_defined!}
+          line %{  ensure_correct_request_type!(:#{underscore(method.name)}, message) }
+          line %{  raw_reponse = @handler.send(:#{underscore(method.name)}, message.to_hash)}
+          line %{  types_for(:#{underscore(method.name)})[:response].new(raw_reponse)}
+          line %{end}
+        end
+        line
       end
     end
   end
 
   def field_typename(field)
     TYPE_MAPPING[field.type] || service_typename(field.type_name)
-  end
-
-  def service_typename(type_name)
-    type_name.split(".").map { |t| camelize(t) }.join("::")
   end
 
   # TODO: this probably doesn't work for all default values, expand
@@ -205,26 +211,23 @@ HEADER
   end
 
   def fully_qualified_name(package, name)
-    package == nil || package.empty? ? name : "#{package}.#{name}"
+    ProtocolBuffers::FullyQualifiedName.new(package, name).to_s
   end
 
   def capfirst(s)
     "#{s[0,1].capitalize}#{s[1..-1]}" if s
   end
-  
+
+  def service_typename(type_name)
+    ProtocolBuffers::FullyQualifiedName.service_typename(type_name)
+  end
+
   def camelize(lower_case_and_underscored_word)
-    lower_case_and_underscored_word.to_s.gsub(/(?:^|_)(.)/) { $1.upcase }
+    ProtocolBuffers::FullyQualifiedName.camelize(lower_case_and_underscored_word)
   end
 
   def underscore(camelized_word)
-    word = camelized_word.to_s.dup
-    word.gsub!(/::/, '/')
-    word.gsub!(/(?:([A-Za-z\d])|^)((?=\a)\b)(?=\b|[^a-z])/) { "#{$1}#{$1 && '_'}#{$2.downcase}" }
-    word.gsub!(/([A-Z\d]+)([A-Z][a-z])/,'\1_\2')
-    word.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
-    word.tr!("-", "_")
-    word.downcase!
-    word
+    ProtocolBuffers::FullyQualifiedName.underscore(camelized_word)
   end
 
 end
