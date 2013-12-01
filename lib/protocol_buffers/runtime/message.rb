@@ -338,7 +338,7 @@ module ProtocolBuffers
       end
       return true
     end
-    
+
     # Comparison by class and field values.
     def eql?(obj)
       return false unless obj.is_a?(self.class)
@@ -513,7 +513,7 @@ module ProtocolBuffers
         next if field.otype != :required
         next if message.value_for_tag?(tag) && (field.class != Field::MessageField || message.value_for_tag(tag).valid?)
         return false unless raise_exception
-        raise(ProtocolBuffers::EncodeError.new(field), "Required field '#{field.name}' is invalid")
+        raise(ProtocolBuffers::EncodeError.new(field), "Required field '#{field.name}' for '#{self}' is invalid")
       end
 
       true
