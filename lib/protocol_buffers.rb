@@ -11,7 +11,7 @@ module ProtocolBuffers
   end
 end
 
-$LOAD_PATH << File.join(File.dirname(__FILE__), "protocol_buffers", "lib")
+$LOAD_PATH << File.dirname(__FILE__)
 
 require 'protocol_buffers/version'
 require 'protocol_buffers/runtime/message'
