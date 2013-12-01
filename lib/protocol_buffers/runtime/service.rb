@@ -1,5 +1,6 @@
 require 'protocol_buffers/runtime/rpc'
 require 'protocol_buffers/compiler/file_descriptor_to_ruby'
+require 'protocol_buffers/compiler/fully_qualified_name'
 
 module ProtocolBuffers
   class ServiceRegistry
