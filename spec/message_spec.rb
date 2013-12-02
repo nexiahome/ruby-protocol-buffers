@@ -18,6 +18,11 @@ describe ProtocolBuffers, "message" do
     end
   end
 
+  it "defaults to an empty hash if nil is passed to the constructor" do
+    Featureful::A.new().should == Featureful::A.new({})
+    Featureful::A.new(nil).should == Featureful::A.new({})
+  end
+
   it "correctly handles value_for_tag? when fields are set in the constructor" do
     a = Featureful::A.new(
       :i2 => 1,

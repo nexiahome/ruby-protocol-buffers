@@ -231,7 +231,8 @@ module ProtocolBuffers
     #   # is equivalent to
     #   message = MyMessageClass.new
     #   message.attributes = attributes
-    def initialize(attributes = {})
+    def initialize(attributes = nil)
+      attributes ||= {}
       @set_fields = self.class.initial_set_fields.dup
       self.attributes = attributes
     end
