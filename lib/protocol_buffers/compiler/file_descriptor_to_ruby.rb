@@ -181,7 +181,6 @@ def dump_service(package, service)
         unless fully_qualified_name.nil?
           line %{def #{underscore(method.name)}(message)}
           line %{  ensure_handler_defined!}
-          line %{  ensure_correct_request_type!(:#{underscore(method.name)}, message) }
           line %{  raw_reponse = @handler.send(:#{underscore(method.name)}, message)}
           line %{  types_for(:#{underscore(method.name)})[:response].new(raw_reponse)}
           line %{end}
