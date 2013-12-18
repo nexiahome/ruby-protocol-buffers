@@ -18,6 +18,43 @@ describe ProtocolBuffers, "message" do
     end
   end
 
+  module TestMessages
+    class TestHeader < ::ProtocolBuffers::Message
+      set_fully_qualified_name "test_messages.TestHeader"
+      required :string, :id, 1
+      required :string, :occurred_at, 2
+    end
+
+    class TestSystemName < ::ProtocolBuffers::Message
+      set_fully_qualified_name "test_messages.TestSystemName"
+      required :string, :name, 1
+    end
+
+    class TestCommand < ::ProtocolBuffers::Message
+      set_fully_qualified_name "test_messages.TestCommand"
+      optional TestHeader, :header, 1
+      optional TestSystemName, :value, 2
+    end
+  end
+
+  it "should build a message with nested types from a hash with a matching schema" do
+    id = "one"
+    occurred_at = Time.now.utc.to_s
+    name = "fooDaddy"
+    hash = Hash[ header: {id: id, occurred_at: occurred_at}, value: {name: name} ]
+
+    message = TestMessages::TestCommand.from_hash(hash)
+
+    message.should be_instance_of(TestMessages::TestCommand)
+
+    message.header.should be_instance_of(TestMessages::TestHeader)
+    message.header.id.should == id
+    message.header.occurred_at.should == occurred_at
+
+    message.value.should be_instance_of(TestMessages::TestSystemName)
+    message.value.name.should == name
+  end
+
   it "defaults to an empty hash if nil is passed to the constructor" do
     Featureful::A.new().should == Featureful::A.new({})
     Featureful::A.new(nil).should == Featureful::A.new({})

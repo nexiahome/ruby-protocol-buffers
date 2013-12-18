@@ -274,6 +274,16 @@ module ProtocolBuffers
       end
     end
 
+    def self.from_hash(hash)
+      return self.new({}) if hash.nil?
+      recursive_object_hash = {}
+      self.fields.values.each do |value|
+        name  = value.name
+        recursive_object_hash[name] = value.respond_to?(:proxy_class) ? value.proxy_class.new(hash[name]) : value
+      end
+      self.new(recursive_object_hash)
+    end
+
     # Parse a Message of this class from the given IO/String. Since Protocol
     # Buffers are not length delimited, this will read until the end of the
     # stream.
