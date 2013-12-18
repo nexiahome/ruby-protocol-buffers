@@ -279,7 +279,13 @@ module ProtocolBuffers
       recursive_object_hash = {}
       self.fields.values.each do |value|
         name  = value.name
-        recursive_object_hash[name] = value.respond_to?(:proxy_class) ? value.proxy_class.new(hash[name]) : value
+        if value.kind_of?(::ProtocolBuffers::Message)
+          recursive_object_hash[name] =  value.class.from_hash(value.to_hash) #copy constructor
+        elsif value.respond_to?(:proxy_class)
+          recursive_object_hash[name] =  value.proxy_class.new(hash[name])
+        else
+          recursive_object_hash[name]  = value
+       end
       end
       self.new(recursive_object_hash)
     end
