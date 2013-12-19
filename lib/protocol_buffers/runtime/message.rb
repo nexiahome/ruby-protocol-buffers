@@ -278,17 +278,20 @@ module ProtocolBuffers
     #Useful for converting Messages to Domain Objects via convention
     #The idea is be able to do MyMessage.from_hash(MyDomainObject.to_hash)
     #The Domain Objects can also implement the reverse
+
     def self.from_hash(hash)
       return self.new({}) if hash.nil?
       recursively_build_subfields = {}
-
       self.fields.values.each do |value|
         name  = value.name
         recursively_build_subfields[name] ||= {}
-
         if value.respond_to?(:proxy_class)
           klass = value.proxy_class
-          recursively_build_subfields[name] = subfields(klass, hash[name])
+          if value.otype == :repeated
+            recursively_build_subfields[name] = hash[name].map{|field| subfields(klass, field)}
+          else
+            recursively_build_subfields[name] = subfields(klass, hash[name])
+          end
         elsif(hash[name].kind_of?(Hash))
           klass = self
           recursively_build_subfields[name] = subfields(klass, hash[name])
@@ -296,18 +299,23 @@ module ProtocolBuffers
           recursively_build_subfields[name] =  hash[name]
         end
       end
-
       self.new(recursively_build_subfields)
     end
 
     def self.subfields(klass, hash)
+      return klass.new(hash) if hash.nil? || !hash.respond_to?(:each_pair)
       subfields = klass.fields.values.inject({}){|momento, field| momento[field.name] = field; momento}
 
       built_fields = {}
       hash.each_pair do |key, value|
         subfield = subfields[key]
-        if subfield.kind_of?(::ProtocolBuffers::Field::MessageField)
-          built_fields[subfield.name] = subfield.proxy_class.from_hash(hash[key])
+        if subfield.respond_to?(:proxy_class)
+          if subfield.otype == :repeated
+            value = hash[key] || []
+            built_fields[subfield.name] = value.map{|field| subfield.proxy_class.from_hash(field)}
+          else
+            built_fields[subfield.name] = subfield.proxy_class.from_hash(hash[key])
+          end
         end
       end
 

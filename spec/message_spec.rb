@@ -26,9 +26,16 @@ describe ProtocolBuffers, "message" do
     end
 
     class FullName < ::ProtocolBuffers::Message
+      class List < ::ProtocolBuffers::Message
+        set_fully_qualified_name "test_messages.List"
+        required Name, :thing_one, 1
+        required Name, :thing_two, 2
+      end
+
       set_fully_qualified_name "test_messages.FullName"
       required Name, :first_name, 1
       required Name, :last_name, 2
+      repeated List, :list_o_stuff, 3
     end
 
     class SystemInfo < ::ProtocolBuffers::Message
@@ -67,7 +74,7 @@ describe ProtocolBuffers, "message" do
     flatty = Hash[ stuff: "Stuff", happened: "Happened", flat: true]
     first_name = Hash[value: "First Name", other_value: "Secret First Name"]
     last_name = Hash[value: "Last Name", other_value: "Secret First Name"]
-    full_name = Hash[first_name: first_name, last_name: last_name]
+    full_name = Hash[first_name: first_name, last_name: last_name, list_o_stuff: [{thing_one: first_name, thing_two: last_name}, {thing_one: first_name, thing_two: last_name}]] #
     name = Hash[ name: system_name, full_name: full_name]
     hash = Hash[header: header, value: name, flatty: flatty, on: true]
 
@@ -88,6 +95,11 @@ describe ProtocolBuffers, "message" do
 
     message.value.full_name.last_name.should be_instance_of(TestMessages::Name)
     message.value.full_name.last_name.value.should == last_name[:value]
+
+    message.value.full_name.list_o_stuff.should be_instance_of(ProtocolBuffers::RepeatedField)
+    message.value.full_name.list_o_stuff.each do |f|
+      f.should be_instance_of(TestMessages::FullName::List)
+    end
   end
 
   it "defaults to an empty hash if nil is passed to the constructor" do
