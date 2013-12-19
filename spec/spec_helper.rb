@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'rspec'
+require 'pry-debugger'
 
 require 'simplecov'
 SimpleCov.start

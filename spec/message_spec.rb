@@ -19,40 +19,75 @@ describe ProtocolBuffers, "message" do
   end
 
   module TestMessages
-    class TestHeader < ::ProtocolBuffers::Message
-      set_fully_qualified_name "test_messages.TestHeader"
+    class Name < ::ProtocolBuffers::Message
+      set_fully_qualified_name "test_messages.Name"
+      required :string, :value, 1
+      required :string, :other_value, 2
+    end
+
+    class FullName < ::ProtocolBuffers::Message
+      set_fully_qualified_name "test_messages.FullName"
+      required Name, :first_name, 1
+      required Name, :last_name, 2
+    end
+
+    class SystemInfo < ::ProtocolBuffers::Message
+      set_fully_qualified_name "test_messages.SystemInfo"
+      required :string, :name, 1
+      required FullName, :full_name, 2
+    end
+
+    class Header < ::ProtocolBuffers::Message
+      set_fully_qualified_name "test_messages.Header"
       required :string, :id, 1
       required :string, :occurred_at, 2
     end
 
-    class TestSystemName < ::ProtocolBuffers::Message
-      set_fully_qualified_name "test_messages.TestSystemName"
-      required :string, :name, 1
+    class Flatty < ::ProtocolBuffers::Message
+      set_fully_qualified_name "test_messages.Flatty"
+      required :string, :stuff, 1
+      required :string, :happened, 2
+      required :bool, :flat, 3
     end
 
-    class TestCommand < ::ProtocolBuffers::Message
-      set_fully_qualified_name "test_messages.TestCommand"
-      optional TestHeader, :header, 1
-      optional TestSystemName, :value, 2
+    class Command < ::ProtocolBuffers::Message
+      set_fully_qualified_name "test_messages.Command"
+      required Header, :header, 1
+      required SystemInfo, :value, 2
+      required Flatty, :flatty, 3
+      required :bool, :on, 4
     end
   end
 
   it "should build a message with nested types from a hash with a matching schema" do
     id = "one"
+    system_name = "The System Name"
     occurred_at = Time.now.utc.to_s
-    name = "fooDaddy"
-    hash = Hash[ header: {id: id, occurred_at: occurred_at}, value: {name: name} ]
+    header = Hash[ id: id, occurred_at: occurred_at ]
+    flatty = Hash[ stuff: "Stuff", happened: "Happened", flat: true]
+    first_name = Hash[value: "First Name", other_value: "Secret First Name"]
+    last_name = Hash[value: "Last Name", other_value: "Secret First Name"]
+    full_name = Hash[first_name: first_name, last_name: last_name]
+    name = Hash[ name: system_name, full_name: full_name]
+    hash = Hash[header: header, value: name, flatty: flatty, on: true]
 
-    message = TestMessages::TestCommand.from_hash(hash)
+    message = TestMessages::Command.from_hash(hash)
 
-    message.should be_instance_of(TestMessages::TestCommand)
-
-    message.header.should be_instance_of(TestMessages::TestHeader)
+    message.should be_instance_of(TestMessages::Command)
+    message.header.should be_instance_of(TestMessages::Header)
     message.header.id.should == id
     message.header.occurred_at.should == occurred_at
 
-    message.value.should be_instance_of(TestMessages::TestSystemName)
-    message.value.name.should == name
+    message.value.should be_instance_of(TestMessages::SystemInfo)
+    message.value.name.should == system_name
+
+    message.value.full_name.should be_instance_of(TestMessages::FullName)
+
+    message.value.full_name.first_name.should be_instance_of(TestMessages::Name)
+    message.value.full_name.first_name.value.should == first_name[:value]
+
+    message.value.full_name.last_name.should be_instance_of(TestMessages::Name)
+    message.value.full_name.last_name.value.should == last_name[:value]
   end
 
   it "defaults to an empty hash if nil is passed to the constructor" do
@@ -133,7 +168,7 @@ describe ProtocolBuffers, "message" do
     c.value_for_tag?(1).should == true
   end
 
-  it "correctly handles value_for_tag? when a field is accessed and then modified and this field is a MessageField with a repeated and optional field accessed" do
+  it "correctly handles value_for_tag? when a field is accessed and then modified and this field is a MessageField with a repeated and required field accessed" do
     c = Featureful::C.new
     c_d = c.d
     c_d.f = [1, 2, 3].map do |num|

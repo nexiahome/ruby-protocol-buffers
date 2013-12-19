@@ -274,20 +274,44 @@ module ProtocolBuffers
       end
     end
 
+    #Build Message from a nested hash with matching structure
+    #Useful for converting Messages to Domain Objects via convention
+    #The idea is be able to do MyMessage.from_hash(MyDomainObject.to_hash)
+    #The Domain Objects can also implement the reverse
     def self.from_hash(hash)
       return self.new({}) if hash.nil?
-      recursive_object_hash = {}
+      recursively_build_subfields = {}
+
       self.fields.values.each do |value|
         name  = value.name
-        if value.kind_of?(ProtocolBuffers::Field::MessageField)
-          recursive_object_hash[name] =  value.proxy_class.new(from_hash(hash[name])) #copy constructor
-        elsif value.respond_to?(:proxy_class)
-          recursive_object_hash[name] =  value.proxy_class.new(hash[name])
+        recursively_build_subfields[name] ||= {}
+
+        if value.respond_to?(:proxy_class)
+          klass = value.proxy_class
+          recursively_build_subfields[name] = subfields(klass, hash[name])
+        elsif(hash[name].kind_of?(Hash))
+          klass = self
+          recursively_build_subfields[name] = subfields(klass, hash[name])
         else
-          recursive_object_hash[name]  = value
-       end
+          recursively_build_subfields[name] =  hash[name]
+        end
       end
-      self.new(recursive_object_hash)
+
+      self.new(recursively_build_subfields)
+    end
+
+    def self.subfields(klass, hash)
+      subfields = klass.fields.values.inject({}){|momento, field| momento[field.name] = field; momento}
+
+      built_fields = {}
+      hash.each_pair do |key, value|
+        subfield = subfields[key]
+        if subfield.kind_of?(::ProtocolBuffers::Field::MessageField)
+          built_fields[subfield.name] = subfield.proxy_class.from_hash(hash[key])
+        end
+      end
+
+      klass.new(hash.merge(built_fields))
     end
 
     # Parse a Message of this class from the given IO/String. Since Protocol
