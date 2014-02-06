@@ -11,7 +11,7 @@ module ProtocolBuffers
   end
 end
 
-$LOAD_PATH << File.dirname(__FILE__)
+# $LOAD_PATH << File.dirname(__FILE__)
 
 require 'protocol_buffers/version'
 require 'protocol_buffers/runtime/message'
