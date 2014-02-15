@@ -179,9 +179,9 @@ def dump_service(package, service)
       service.method.each do |method|
         line %{rpc :#{underscore(method.name)}, "#{method.name}", #{service_typename(method.input_type)}, #{service_typename(method.output_type)}}
         unless fully_qualified_name.nil?
-          line %{def #{underscore(method.name)}(message)}
+          line %{def #{underscore(method.name)}(message, *args)}
           line %{  ensure_handler_defined!}
-          line %{  raw_reponse = @handler.send(:#{underscore(method.name)}, message)}
+          line %{  raw_reponse = @handler.send(:#{underscore(method.name)}, message, *args)}
           line %{  types_for(:#{underscore(method.name)})[:response].new(raw_reponse)}
           line %{end}
         end
