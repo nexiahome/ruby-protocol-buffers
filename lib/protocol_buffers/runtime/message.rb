@@ -266,7 +266,7 @@ module ProtocolBuffers
       return nil if message == nil
       return message.is_a?(String) ? message.dup : message unless message.is_a?(::ProtocolBuffers::Message)
       message.fields.select do |tag, field|
-        message.value_for_tag?(tag)
+        message.value_for_tag?(tag) || field.has_default?
       end.inject(Hash.new) do |hash, (tag, field)|
         value = message.value_for_tag(tag)
         hash[field.name] = value.is_a?(::ProtocolBuffers::RepeatedField) ? value.map { |elem| to_hash(elem) } : to_hash(value)

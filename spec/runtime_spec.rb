@@ -742,6 +742,11 @@ describe ProtocolBuffers, "runtime" do
 
   end
 
+  it "includes default values set in the .proto files in the hash" do
+    bit = Featureful::ABitOfEverything.new.to_hash
+    bit.should == {int64_field: 15, bool_field: false, string_field: 'zomgkittenz'}
+  end
+
   it "correctly handles ==, eql? and hash" do
     f1 = Featureful::A.new
     f1.i1 = [1, 2, 3]

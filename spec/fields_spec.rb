@@ -9,6 +9,13 @@ require 'protocol_buffers/runtime/field'
 
 describe ProtocolBuffers, "fields" do
 
+  before(:each) do
+  # clear our namespaces
+    Object.send(:remove_const, :Featureful) if Object.const_defined?(:Featureful)
+  # load test proto
+    load File.join(File.dirname(__FILE__), "proto_files", "featureful.pb.rb")
+  end
+
   def mkfield(ftype)
     ProtocolBuffers::Field.const_get(ftype).new(:optional, "test", 1)
   end
@@ -99,5 +106,13 @@ describe ProtocolBuffers, "fields" do
   it "provides a reader for proxy_class on message fields" do
     ProtocolBuffers::Field::MessageField.new(nil, :optional, :fake_name, 1).should respond_to(:proxy_class)
     ProtocolBuffers::Field::MessageField.new(Class, :optional, :fake_name, 1).proxy_class.should == Class
+  end
+
+  it "allows one to check if a default has been set in the protobuff without setting it in ruby" do
+    bit = Featureful::ABitOfEverything.new
+    fields_with_defaults = [:int64_field, :bool_field, :string_field]
+    bit.fields.values.each do |field|
+      fields_with_defaults.include?(field.name) ? field.should(have_default) : field.should_not(have_default)
+    end
   end
 end
