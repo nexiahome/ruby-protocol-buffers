@@ -378,37 +378,12 @@ module ProtocolBuffers
     # Comparison by class and field values.
     def ==(obj)
       return false unless obj.is_a?(self.class)
-      fields.each do |tag, _|
-        if value_for_tag?(tag)
-          return false unless (obj.value_for_tag?(tag) && value_for_tag(tag) == obj.value_for_tag(tag))
-        else
-          return false if obj.value_for_tag?(tag)
-        end
-      end
-      return true
+      obj.to_hash.hash == self.to_hash.hash
     end
-
-    # Comparison by class and field values.
-    def eql?(obj)
-      return false unless obj.is_a?(self.class)
-      fields.each do |tag, _|
-        if value_for_tag?(tag)
-          return false unless (obj.value_for_tag?(tag) && value_for_tag(tag).eql?(obj.value_for_tag(tag)))
-        else
-          return false if obj.value_for_tag?(tag)
-        end
-      end
-      return true
-    end
+    alias eql? ==
 
     def hash
-      hash_code = 0
-      fields.each do |tag, _|
-        if value_for_tag?(tag)
-          hash_code = hash_code ^ value_for_tag(tag).hash
-        end
-      end
-      hash_code
+      self.to_hash.hash
     end
 
     # Reset all fields to the default value.

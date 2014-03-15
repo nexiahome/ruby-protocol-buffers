@@ -133,6 +133,10 @@ module ProtocolBuffers
       !(@opts[:default] === nil)
     end
 
+    def raw_default
+      @opts[:default]
+    end
+
     def add_reader_to(klass)
       if repeated?
         klass.class_eval <<-EOF, __FILE__, __LINE__+1
