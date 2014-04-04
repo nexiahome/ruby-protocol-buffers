@@ -284,6 +284,7 @@ module ProtocolBuffers
       recursively_build_subfields = {}
       self.fields.values.each do |value|
         name  = value.name
+        next if hash[name].nil?
         recursively_build_subfields[name] ||= {}
         if value.respond_to?(:proxy_class)
           klass = value.proxy_class
