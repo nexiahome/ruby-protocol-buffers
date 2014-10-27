@@ -11,23 +11,23 @@ require 'protocol_buffers'
 describe "Testing for decode errors for negative int32 fields" do
   # These should fail without the int32 negative handling fix 
   it "should return -1 given -1" do
-    (validate_pbr(SignedIntTest, -1, true)).should be_true
+    expect(validate_pbr(SignedIntTest, -1, true)).to be_truthy
   end
   
   it "should return -1111 given -1111" do
-    (validate_pbr(SignedIntTest, -1111, true)).should be_true
+    expect(validate_pbr(SignedIntTest, -1111, true)).to be_truthy
   end
   
   # These should pass with or without the negative handling fix
   it "should return 1 given 1" do
-    (validate_pbr(SignedIntTest, 1, true)).should be_true
+    expect(validate_pbr(SignedIntTest, 1, true)).to be_truthy
   end
   
   it "should return 0 given 0" do
-    (validate_pbr(SignedIntTest, 0, true)).should be_true
+    expect(validate_pbr(SignedIntTest, 0, true)).to be_truthy
   end
   
   it "should return 100000 given 100000" do
-    (validate_pbr(SignedIntTest, 100000, true)).should be_true    
+    expect(validate_pbr(SignedIntTest, 100000, true)).to be_truthy    
   end
 end

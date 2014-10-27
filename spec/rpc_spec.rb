@@ -44,38 +44,38 @@ end
         it "should register a handler factory with a service" do
           number_of_registered_services = ServiceRegistry.number_of_registered_services
           register!
-          ServiceRegistry.number_of_registered_services.should == (number_of_registered_services + 1)
+          expect(ServiceRegistry.number_of_registered_services).to eq(number_of_registered_services + 1)
         end
 
         it "should register all types associated with a service that have a fully_qualified_name" do
-          ServiceRegistry.to_class("services.FooResponse").should == ::Services::FooResponse
-          ServiceRegistry.to_class(nil).should == nil
-          ServiceRegistry.to_class("services.blah").should == nil
+          expect(ServiceRegistry.to_class("services.FooResponse")).to eq(::Services::FooResponse)
+          expect(ServiceRegistry.to_class(nil)).to eq(nil)
+          expect(ServiceRegistry.to_class("services.blah")).to eq(nil)
         end
 
         it "should not register a handler to a service without a fully_qualified_name" do
-          ::Services::NoNameFooBarService.fully_qualified_name.should == nil
+          expect(::Services::NoNameFooBarService.fully_qualified_name).to eq(nil)
           number_of_registered_services = ServiceRegistry.number_of_registered_services
           ServiceRegistry.register_service(::Services::NoNameFooBarService.fully_qualified_name, handler_factory)
-          ServiceRegistry.number_of_registered_services.should == number_of_registered_services
+          expect(ServiceRegistry.number_of_registered_services).to eq(number_of_registered_services)
         end
 
         it "should find an instance of a service by its registration name" do
-          ServiceRegistry.find(::Services::FooBarService.fully_qualified_name).should be_instance_of(::Services::FooBarService)
+          expect(ServiceRegistry.find(::Services::FooBarService.fully_qualified_name)).to be_instance_of(::Services::FooBarService)
         end
 
         it "should create a new service instance with a handler instance inside" do
-          handler_factory.should_receive(:call).and_call_original
+          expect(handler_factory).to receive(:call).and_call_original
           register!
-          service.should be_instance_of(::Services::FooBarService)
+          expect(service).to be_instance_of(::Services::FooBarService)
         end
 
         it "should list all the services that have registered handlers" do
-          ServiceRegistry.registered_services.should == ["services.FooBarService"]
+          expect(ServiceRegistry.registered_services).to eq(["services.FooBarService"])
         end
 
         it "should return the class of an object defined in a .proto file based on its fully_qualified_name" do
-          ServiceRegistry.to_class('services.FooBarService').should == ::Services::FooBarService
+          expect(ServiceRegistry.to_class('services.FooBarService')).to eq(::Services::FooBarService)
         end
       end
 
@@ -85,12 +85,12 @@ end
         end
 
         it "should add the methods defined by the .proto file to the generated classes" do
-          [:get_bar, :get_foo].each{|m| service.should respond_to(m)}
+          [:get_bar, :get_foo].each{|m| expect(service).to respond_to(m)}
         end
 
         it "should delgate the service method calls to the handler" do
-          handler.should_receive(:get_bar).with(bar_request.to_hash).and_return(bar_response.to_hash)
-          service.get_bar(bar_request).should == bar_response
+          expect(handler).to receive(:get_bar).with(bar_request.to_hash).and_return(bar_response.to_hash)
+          expect(service.get_bar(bar_request)).to eq(bar_response)
         end
 
         it "should raise an error if no handler is defined" do
@@ -110,7 +110,7 @@ end
         end
 
         it "should define the request and result types for an rpc method" do
-          ::Services::FooBarService.types_for(:get_bar).should == {request: ::Services::BarRequest, response: ::Services::BarResponse}
+          expect(::Services::FooBarService.types_for(:get_bar)).to eq({request: ::Services::BarRequest, response: ::Services::BarResponse})
         end
       end
     end

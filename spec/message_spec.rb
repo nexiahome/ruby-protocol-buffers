@@ -80,31 +80,31 @@ describe ProtocolBuffers, "message" do
 
     message = TestMessages::Command.from_hash(hash)
 
-    message.should be_instance_of(TestMessages::Command)
-    message.header.should be_instance_of(TestMessages::Header)
-    message.header.id.should == id
-    message.header.occurred_at.should == occurred_at
+    expect(message).to be_instance_of(TestMessages::Command)
+    expect(message.header).to be_instance_of(TestMessages::Header)
+    expect(message.header.id).to eq(id)
+    expect(message.header.occurred_at).to eq(occurred_at)
 
-    message.value.should be_instance_of(TestMessages::SystemInfo)
-    message.value.name.should == system_name
+    expect(message.value).to be_instance_of(TestMessages::SystemInfo)
+    expect(message.value.name).to eq(system_name)
 
-    message.value.full_name.should be_instance_of(TestMessages::FullName)
+    expect(message.value.full_name).to be_instance_of(TestMessages::FullName)
 
-    message.value.full_name.first_name.should be_instance_of(TestMessages::Name)
-    message.value.full_name.first_name.value.should == first_name[:value]
+    expect(message.value.full_name.first_name).to be_instance_of(TestMessages::Name)
+    expect(message.value.full_name.first_name.value).to eq(first_name[:value])
 
-    message.value.full_name.last_name.should be_instance_of(TestMessages::Name)
-    message.value.full_name.last_name.value.should == last_name[:value]
+    expect(message.value.full_name.last_name).to be_instance_of(TestMessages::Name)
+    expect(message.value.full_name.last_name.value).to eq(last_name[:value])
 
-    message.value.full_name.list_o_stuff.should be_instance_of(ProtocolBuffers::RepeatedField)
+    expect(message.value.full_name.list_o_stuff).to be_instance_of(ProtocolBuffers::RepeatedField)
     message.value.full_name.list_o_stuff.each do |f|
-      f.should be_instance_of(TestMessages::FullName::List)
+      expect(f).to be_instance_of(TestMessages::FullName::List)
     end
   end
 
   it "defaults to an empty hash if nil is passed to the constructor" do
-    Featureful::A.new().should == Featureful::A.new({})
-    Featureful::A.new(nil).should == Featureful::A.new({})
+    expect(Featureful::A.new()).to eq(Featureful::A.new({}))
+    expect(Featureful::A.new(nil)).to eq(Featureful::A.new({}))
   end
 
   it "correctly handles value_for_tag? when fields are set in the constructor" do
@@ -115,8 +115,8 @@ describe ProtocolBuffers, "message" do
       )
     )
 
-    a.value_for_tag?(1).should == true
-    a.value_for_tag?(5).should == true
+    expect(a.value_for_tag?(1)).to eq(true)
+    expect(a.value_for_tag?(5)).to eq(true)
   end
 
   it "correctly handles value_for_tag? when a MessageField is set to the same object in two locations within the same proto and set in the constructor" do
@@ -136,7 +136,7 @@ describe ProtocolBuffers, "message" do
       end
     )
 
-    c.value_for_tag?(1).should == true
+    expect(c.value_for_tag?(1)).to eq(true)
   end
 
   it "correctly handles value_for_tag? when a Messagefield is set to the same object in two locations within the same proto and set outside of the constructor" do
@@ -154,7 +154,7 @@ describe ProtocolBuffers, "message" do
       )
     end
 
-    c.value_for_tag?(1).should == true
+    expect(c.value_for_tag?(1)).to eq(true)
   end
 
   it "correctly handles value_for_tag? when a field is accessed and then modified and this field is a MessageField with only a repeated field accessed" do
@@ -177,7 +177,7 @@ describe ProtocolBuffers, "message" do
       )
     end
 
-    c.value_for_tag?(1).should == true
+    expect(c.value_for_tag?(1)).to eq(true)
   end
 
   it "correctly handles value_for_tag? when a field is accessed and then modified and this field is a MessageField with a repeated and required field accessed" do
@@ -203,6 +203,6 @@ describe ProtocolBuffers, "message" do
       )
     end
 
-    c.value_for_tag?(1).should == true
+    expect(c.value_for_tag?(1)).to eq(true)
   end
 end

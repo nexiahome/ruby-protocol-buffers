@@ -22,14 +22,14 @@ describe ProtocolBuffers, "fields" do
 
   it "checks bounds on varint field types" do
     u32 = mkfield(:Uint32Field)
-    proc { u32.check_valid(0xFFFFFFFF) }.should_not raise_error()
-    proc { u32.check_valid(0x100000000) }.should raise_error(ArgumentError)
-    proc { u32.check_valid(-1) }.should raise_error(ArgumentError)
+    expect { u32.check_valid(0xFFFFFFFF) }.not_to raise_error()
+    expect { u32.check_valid(0x100000000) }.to raise_error(ArgumentError)
+    expect { u32.check_valid(-1) }.to raise_error(ArgumentError)
 
     u64 = mkfield(:Uint64Field)
-    proc { u64.check_valid(0xFFFFFFFF_FFFFFFFF) }.should_not raise_error()
-    proc { u64.check_valid(0x100000000_00000000) }.should raise_error(ArgumentError)
-    proc { u64.check_valid(-1) }.should raise_error(ArgumentError)
+    expect { u64.check_valid(0xFFFFFFFF_FFFFFFFF) }.not_to raise_error()
+    expect { u64.check_valid(0x100000000_00000000) }.to raise_error(ArgumentError)
+    expect { u64.check_valid(-1) }.to raise_error(ArgumentError)
   end
 
   it "properly encodes and decodes negative varints" do
@@ -37,12 +37,12 @@ describe ProtocolBuffers, "fields" do
     str = "\200\300\313\274\236\265\246\374\377\001"
     sio = ProtocolBuffers.bin_sio
     ProtocolBuffers::Varint.encode(sio, val)
-    sio.string.should == str
+    expect(sio.string).to eq(str)
     sio.rewind
     val2 = ProtocolBuffers::Varint.decode(sio)
     int64 = mkfield(:Int64Field)
-    int64.deserialize(val2).should == val
-    proc { int64.check_value(int64.deserialize(val2)) }.should_not raise_error
+    expect(int64.deserialize(val2)).to eq(val)
+    expect { int64.check_value(int64.deserialize(val2)) }.not_to raise_error
   end
 
   context "UTF-8 encoding of length-delimited fields" do
@@ -66,53 +66,53 @@ describe ProtocolBuffers, "fields" do
       context "string fields" do
 
         it "forces UTF-8 on serializing" do
-          @s.serialize(@good_utf).encoding.should == Encoding::UTF_8
-          proc { @s.check_valid(@s.serialize(@good_utf)) }.should_not raise_error()
+          expect(@s.serialize(@good_utf).encoding).to eq(Encoding::UTF_8)
+          expect { @s.check_valid(@s.serialize(@good_utf)) }.not_to raise_error()
 
-          @s.serialize(@good_ascii).encoding.should == Encoding::UTF_8
-          proc { @s.check_valid(@s.serialize(@good_ascii)) }.should_not raise_error()
+          expect(@s.serialize(@good_ascii).encoding).to eq(Encoding::UTF_8)
+          expect { @s.check_valid(@s.serialize(@good_ascii)) }.not_to raise_error()
 
-          proc { @s.serialize(@bad_utf) }.should raise_error(ArgumentError)
+          expect { @s.serialize(@bad_utf) }.to raise_error(ArgumentError)
         end
 
         it "forces UTF-8 on deserializing" do
-          @s.deserialize(@good_utf_io[]).encoding.should == Encoding::UTF_8
-          proc { @s.check_valid(@s.deserialize(@good_utf_io[])) }.should_not raise_error()
+          expect(@s.deserialize(@good_utf_io[]).encoding).to eq(Encoding::UTF_8)
+          expect { @s.check_valid(@s.deserialize(@good_utf_io[])) }.not_to raise_error()
 
-          @s.deserialize(@good_ascii_io[]).encoding.should == Encoding::UTF_8
-          proc { @s.check_valid(@s.deserialize(@good_ascii_io[])) }.should_not raise_error()
+          expect(@s.deserialize(@good_ascii_io[]).encoding).to eq(Encoding::UTF_8)
+          expect { @s.check_valid(@s.deserialize(@good_ascii_io[])) }.not_to raise_error()
 
-          @s.deserialize(@bad_utf_io[]).encoding.should == Encoding::UTF_8
-          proc { @s.check_valid(@s.deserialize(@bad_utf_io[])) }.should raise_error(ArgumentError)
+          expect(@s.deserialize(@bad_utf_io[]).encoding).to eq(Encoding::UTF_8)
+          expect { @s.check_valid(@s.deserialize(@bad_utf_io[])) }.to raise_error(ArgumentError)
         end
       end
 
       context "byte fields" do
 
         it "does not force UTF-8 on deserializing" do
-          @b.deserialize(@good_utf_io[]).encoding.should == Encoding::BINARY
-          proc { @b.check_valid(@b.deserialize(@good_utf_io[])) }.should_not raise_error()
+          expect(@b.deserialize(@good_utf_io[]).encoding).to eq(Encoding::BINARY)
+          expect { @b.check_valid(@b.deserialize(@good_utf_io[])) }.not_to raise_error()
 
-          @b.deserialize(@good_ascii_io[]).encoding.should == Encoding.find("us-ascii")
-          proc { @b.check_valid(@b.deserialize(@good_ascii_io[])) }.should_not raise_error()
+          expect(@b.deserialize(@good_ascii_io[]).encoding).to eq(Encoding.find("us-ascii"))
+          expect { @b.check_valid(@b.deserialize(@good_ascii_io[])) }.not_to raise_error()
 
-          @b.deserialize(@bad_utf_io[]).encoding.should == Encoding::BINARY
-          proc { @b.check_valid(@b.deserialize(@bad_utf_io[])) }.should_not raise_error()
+          expect(@b.deserialize(@bad_utf_io[]).encoding).to eq(Encoding::BINARY)
+          expect { @b.check_valid(@b.deserialize(@bad_utf_io[])) }.not_to raise_error()
         end
       end
     end
   end
 
   it "provides a reader for proxy_class on message fields" do
-    ProtocolBuffers::Field::MessageField.new(nil, :optional, :fake_name, 1).should respond_to(:proxy_class)
-    ProtocolBuffers::Field::MessageField.new(Class, :optional, :fake_name, 1).proxy_class.should == Class
+    expect(ProtocolBuffers::Field::MessageField.new(nil, :optional, :fake_name, 1)).to respond_to(:proxy_class)
+    expect(ProtocolBuffers::Field::MessageField.new(Class, :optional, :fake_name, 1).proxy_class).to eq(Class)
   end
 
   it "allows one to check if a default has been set in the protobuff without setting it in ruby" do
     bit = Featureful::ABitOfEverything.new
     fields_with_defaults = [:int64_field, :bool_field, :string_field]
     bit.fields.values.each do |field|
-      fields_with_defaults.include?(field.name) ? field.should(have_default) : field.should_not(have_default)
+      fields_with_defaults.include?(field.name) ? expect(field).to(have_default) : expect(field).not_to(have_default)
     end
   end
 end
