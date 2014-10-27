@@ -12,3 +12,5 @@ prof
 rdoc
 tests
 tmp
+vendor/bundle
+.bundle
