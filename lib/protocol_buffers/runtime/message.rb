@@ -309,6 +309,8 @@ module ProtocolBuffers
 
       built_fields = {}
       hash.each_pair do |key, value|
+        next unless value
+
         subfield = subfields[key]
         if subfield.respond_to?(:proxy_class)
           if subfield.otype == :repeated
