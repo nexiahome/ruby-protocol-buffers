@@ -22,7 +22,7 @@ Gem::Specification.new do |gem|
 
   gem.add_development_dependency "autotest-standalone"
   gem.add_development_dependency "autotest-growl"
-  gem.add_development_dependency "rake"
+  gem.add_development_dependency "rake", "< 11.0"
   gem.add_development_dependency "rake-compiler"
   gem.add_development_dependency "simplecov"
   gem.add_development_dependency "rspec", "~> 3.1"
