@@ -296,6 +296,8 @@ module ProtocolBuffers
         elsif(hash[name].kind_of?(Hash))
           klass = self
           recursively_build_subfields[name] = subfields(klass, hash[name])
+        elsif(value.is_a?(Field::EnumField) and hash[name].is_a?(String))
+          recursively_build_subfields[name] = value.value_to_name.invert[hash[name]]
         else
           recursively_build_subfields[name] =  hash[name]
         end
@@ -319,6 +321,8 @@ module ProtocolBuffers
           else
             built_fields[subfield.name] = subfield.proxy_class.from_hash(hash[key])
           end
+        elsif subfield.is_a?(Field::EnumField) && value.is_a?(String)
+          built_fields[subfield.name] = subfield.value_to_name.invert[value]
         end
       end
 
