@@ -2,7 +2,10 @@ module ProtocolBuffers
   class FullyQualifiedName
     def self.to_class(fully_qualified_name)
       return nil if fully_qualified_name.nil?
-      service_typename(fully_qualified_name.to_s).split('::').inject(Object) { |mod, class_name| mod.const_get(class_name) if mod.const_defined?(class_name)}
+      service_typename(fully_qualified_name.to_s).split('::').inject(Object) { |mod, class_name|
+        raise CompileError, "Unknown fully qualified name #{fully_qualified_name}" if mod.nil?
+        mod.const_get(class_name) if mod.const_defined?(class_name)
+      }
     end
 
     def self.service_typename(type_name)
