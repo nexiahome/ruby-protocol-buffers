@@ -73,4 +73,13 @@ describe ProtocolBuffers, "compiler" do
       File.join(File.dirname(__FILE__), "proto_files", "featureful.proto"))
   end
 
+  describe ProtocolBuffers::FullyQualifiedName do
+    describe ".to_class" do
+      it "raises a meaningful error on unknown fully qualified name" do
+        expect {
+          ProtocolBuffers::FullyQualifiedName.to_class("unknown.fully.qualified.name")
+        }.to raise_error(ProtocolBuffers::CompileError, "Unknown fully qualified name unknown.fully.qualified.name")
+      end
+    end
+  end
 end
