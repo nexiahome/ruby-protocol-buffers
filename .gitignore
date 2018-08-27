@@ -13,3 +13,5 @@ rdoc
 tests
 tmp
 /lib/protocol_buffers/runtime/text_parser.rb
+vendor/bundle
+.bundle

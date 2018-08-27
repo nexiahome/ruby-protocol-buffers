@@ -233,7 +233,8 @@ module ProtocolBuffers
     #   # is equivalent to
     #   message = MyMessageClass.new
     #   message.attributes = attributes
-    def initialize(attributes = {})
+    def initialize(attributes = nil)
+      attributes ||= {}
       @set_fields = self.class.initial_set_fields.dup
       self.attributes = attributes
     end
@@ -280,12 +281,67 @@ module ProtocolBuffers
       return nil if message == nil
       return message.is_a?(String) ? message.dup : message unless message.is_a?(::ProtocolBuffers::Message)
       message.fields.select do |tag, field|
-        message.value_for_tag?(tag)
+        message.value_for_tag?(tag) || field.has_default?
       end.inject(Hash.new) do |hash, (tag, field)|
         value = message.value_for_tag(tag)
         hash[field.name] = value.is_a?(::ProtocolBuffers::RepeatedField) ? value.map { |elem| to_hash(elem) } : to_hash(value)
         hash
       end
+    end
+
+    #Build Message from a nested hash with matching structure
+    #Useful for converting Messages to Domain Objects via convention
+    #The idea is be able to do MyMessage.from_hash(MyDomainObject.to_hash)
+    #The Domain Objects can also implement the reverse
+
+    def self.from_hash(hash)
+      return self.new({}) if hash.nil?
+      recursively_build_subfields = {}
+      self.fields.values.each do |value|
+        name  = value.name
+        next if hash[name].nil?
+        recursively_build_subfields[name] ||= {}
+        if value.respond_to?(:proxy_class)
+          klass = value.proxy_class
+          if value.otype == :repeated
+            recursively_build_subfields[name] = hash[name].map{|field| subfields(klass, field)}
+          else
+            recursively_build_subfields[name] = subfields(klass, hash[name])
+          end
+        elsif(hash[name].kind_of?(Hash))
+          klass = self
+          recursively_build_subfields[name] = subfields(klass, hash[name])
+        elsif(value.is_a?(Field::EnumField) and hash[name].is_a?(String))
+          recursively_build_subfields[name] = value.value_to_name.invert[hash[name]]
+        else
+          recursively_build_subfields[name] =  hash[name]
+        end
+      end
+      self.new(recursively_build_subfields)
+    end
+
+    def self.subfields(klass, hash)
+      return klass.new(hash) if hash.nil? || !hash.respond_to?(:each_pair)
+      subfields = klass.fields.values.inject({}){|momento, field| momento[field.name] = field; momento}
+
+      built_fields = {}
+      hash.each_pair do |key, value|
+        next unless value
+
+        subfield = subfields[key]
+        if subfield.respond_to?(:proxy_class)
+          if subfield.otype == :repeated
+            value = hash[key] || []
+            built_fields[subfield.name] = value.map{|field| subfield.proxy_class.from_hash(field)}
+          else
+            built_fields[subfield.name] = subfield.proxy_class.from_hash(hash[key])
+          end
+        elsif subfield.is_a?(Field::EnumField) && value.is_a?(String)
+          built_fields[subfield.name] = subfield.value_to_name.invert[value]
+        end
+      end
+
+      klass.new(hash.merge(built_fields))
     end
 
     # Parse a Message of this class from the given IO/String. Since Protocol
@@ -357,37 +413,12 @@ module ProtocolBuffers
     # Comparison by class and field values.
     def ==(obj)
       return false unless obj.is_a?(self.class)
-      fields.each do |tag, _|
-        if value_for_tag?(tag)
-          return false unless (obj.value_for_tag?(tag) && value_for_tag(tag) == obj.value_for_tag(tag))
-        else
-          return false if obj.value_for_tag?(tag)
-        end
-      end
-      return true
+      obj.to_hash.hash == self.to_hash.hash
     end
-    
-    # Comparison by class and field values.
-    def eql?(obj)
-      return false unless obj.is_a?(self.class)
-      fields.each do |tag, _|
-        if value_for_tag?(tag)
-          return false unless (obj.value_for_tag?(tag) && value_for_tag(tag).eql?(obj.value_for_tag(tag)))
-        else
-          return false if obj.value_for_tag?(tag)
-        end
-      end
-      return true
-    end
+    alias eql? ==
 
     def hash
-      hash_code = 0
-      fields.each do |tag, _|
-        if value_for_tag?(tag)
-          hash_code = hash_code ^ value_for_tag(tag).hash
-        end
-      end
-      hash_code
+      self.to_hash.hash
     end
 
     # Reset all fields to the default value.
@@ -576,7 +607,7 @@ module ProtocolBuffers
         next if field.otype != :required
         next if message.value_for_tag?(tag) && (field.class != Field::MessageField || message.value_for_tag(tag).valid?)
         return false unless raise_exception
-        raise(ProtocolBuffers::EncodeError.new(field), "Required field '#{field.name}' is invalid")
+        raise(ProtocolBuffers::EncodeError.new(field), "Required field '#{field.name}' for '#{self}' is invalid")
       end
 
       true

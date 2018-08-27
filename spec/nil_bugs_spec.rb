@@ -19,6 +19,6 @@ describe "testing handling of nil assignments to protobuffers" do
     test_pb.test_field_1 = nil
     test_pb.test_field_1 = nil
     
-    (test_pb.to_s.length > 0).should be true
+    expect(test_pb.to_s.length > 0).to be_truthy
   end
 end

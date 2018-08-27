@@ -11,7 +11,7 @@ require 'protocol_buffers'
 describe "Testing for bugs in Unicode encoding and decoding" do
   # This should always pass
   it "should return the input string given a regular string" do
-    validate_pbr(StringTest, "test_string", true).should be true
+    expect(validate_pbr(StringTest, "test_string", true)).to be_truthy
   end
 
   # Encoding objects aren't defined in Ruby 1.8.  This will only run on 1.9 or above.
@@ -28,6 +28,6 @@ describe "Testing for bugs in Unicode encoding and decoding" do
   # with their encoding set to ASCII.  The new code forces it to UTF-8.
   it "should return the given Unicode string" do
     string_with_r = "(R) Char: \u00AE"
-    validate_pbr(StringTest, string_with_r, true).should be true
+    expect(validate_pbr(StringTest, string_with_r, true)).to be_truthy
   end
 end

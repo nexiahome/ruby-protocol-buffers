@@ -20,9 +20,9 @@ describe ProtocolBuffers, "compiler" do
     next if File.basename(file) == 'depends.proto'
 
     it "can compile #{File.basename(file)}" do
-      proc do
+      expect do
         ProtocolBuffers::Compiler.compile_and_load(file)
-      end.should_not raise_error()
+      end.not_to raise_error()
     end
   end
 
@@ -61,9 +61,9 @@ describe ProtocolBuffers, "compiler" do
     ProtocolBuffers::Compiler.compile_and_load(
       File.join(File.dirname(__FILE__), "proto_files", "under_score_package.proto"))
 
-    proc do
+    expect do
       under_test = UnderScore::UnderTest.new
-    end.should_not raise_error()
+    end.not_to raise_error()
   end
 
   it "should compile and correctly translate" do
@@ -73,4 +73,13 @@ describe ProtocolBuffers, "compiler" do
       File.join(File.dirname(__FILE__), "proto_files", "featureful.proto"))
   end
 
+  describe ProtocolBuffers::FullyQualifiedName do
+    describe ".to_class" do
+      it "raises a meaningful error on unknown fully qualified name" do
+        expect {
+          ProtocolBuffers::FullyQualifiedName.to_class("unknown.fully.qualified.name")
+        }.to raise_error(ProtocolBuffers::CompileError, "Unknown fully qualified name unknown.fully.qualified.name")
+      end
+    end
+  end
 end

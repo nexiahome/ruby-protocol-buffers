@@ -21,6 +21,10 @@ module ProtocolBuffers
       @field = field
     end
 
+    def has_default?
+      false
+    end
+
     # ovverride all mutating methods.
     # I'm sure this will break down on each new major Ruby release, as new
     # mutating methods are added to Array. Ah, well. caveat emptor.
@@ -123,6 +127,14 @@ module ProtocolBuffers
       @name = name
       @tag = tag
       @opts = opts.dup
+    end
+
+    def has_default?
+      !(@opts[:default] === nil)
+    end
+
+    def raw_default
+      @opts[:default]
     end
 
     def add_reader_to(klass)

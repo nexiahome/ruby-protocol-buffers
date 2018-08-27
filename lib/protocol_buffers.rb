@@ -22,6 +22,8 @@ module ProtocolBuffers
   end
 end
 
+# $LOAD_PATH << File.dirname(__FILE__)
+
 require 'protocol_buffers/version'
 require 'protocol_buffers/runtime/message'
 require 'protocol_buffers/runtime/enum'
