@@ -964,7 +964,7 @@ describe ProtocolBuffers, "runtime" do
       :or => [true],
       :and => false,
     )
-    f.or.should =~ [true]
+    expect(f.or).to eq([true])
   end
 
   def get_rpcs

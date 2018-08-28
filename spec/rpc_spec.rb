@@ -96,7 +96,7 @@ end
         it "should raise an error if no handler is defined" do
           factory = lambda { nil }
           ServiceRegistry.register_service(::Services::FooBarService.fully_qualified_name, factory)
-          expect {service.get_bar(bar_request)}.to raise_error
+          expect {service.get_bar(bar_request)}.to raise_error(RuntimeError, /Services::FooBarService/)
         end
 
         it "should raise an error if the wrong type is passed to the service method" do

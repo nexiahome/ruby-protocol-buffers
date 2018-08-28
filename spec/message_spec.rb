@@ -211,10 +211,10 @@ describe ProtocolBuffers, "message" do
     f.i3 = 4
     f.sub3.subsub1.subsub_payload = "sub3subsubpayload"
 
-    f.get(:sub3, :subsub1, :subsub_payload).should == "sub3subsubpayload"
-    f.get(:i3).should == 4
-    f.get(:i2).should == nil
-    f.get(:sub2).should == nil
+    expect(f.get(:sub3, :subsub1, :subsub_payload)).to eq("sub3subsubpayload")
+    expect(f.get(:i3)).to eq(4)
+    expect(f.get(:i2)).to eq(nil)
+    expect(f.get(:sub2)).to eq(nil)
   end
 
   it "correctly handles get!" do
@@ -222,9 +222,9 @@ describe ProtocolBuffers, "message" do
     f.i3 = 4
     f.sub3.subsub1.subsub_payload = "sub3subsubpayload"
 
-    f.get!(:sub3, :subsub1, :subsub_payload).should == "sub3subsubpayload"
-    f.get!(:i3).should == 4
-    proc { f.get!(:i2) }.should raise_error(ArgumentError)
-    proc { f.get!(:sub2) }.should raise_error(ArgumentError)
+    expect(f.get!(:sub3, :subsub1, :subsub_payload)).to eq("sub3subsubpayload")
+    expect(f.get!(:i3)).to eq(4)
+    expect { f.get!(:i2) }.to raise_error(ArgumentError)
+    expect { f.get!(:sub2) }.to raise_error(ArgumentError)
   end
 end

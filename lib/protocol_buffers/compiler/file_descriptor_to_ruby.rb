@@ -171,7 +171,7 @@ HEADER
     line
   end
 
-def dump_service(package, service)
+  def dump_service(package, service)
     in_namespace("class", service.name, " < ::ProtocolBuffers::Service") do
       fully_qualified_name = fully_qualified_name(package, service.name)
       line %{set_fully_qualified_name "#{fully_qualified_name}"}

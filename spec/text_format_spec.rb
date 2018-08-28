@@ -441,7 +441,7 @@ describe ProtocolBuffers::TextParser do
       [false, nil]
     ]
     expect(@parser.parse_from_scanner(tokens, m)).to be_equal(m)
-    expect(m.bool_field).to be_true
+    expect(m.bool_field).to be_truthy
   end
 
   it 'accepts integer as a enum field' do

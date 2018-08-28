@@ -26,6 +26,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "rake-compiler"
   gem.add_development_dependency "simplecov"
   gem.add_development_dependency "rspec", "~> 3.1"
+  gem.add_development_dependency "rspec-collection_matchers"
   gem.add_development_dependency "yard"
   gem.add_development_dependency "racc", "~> 1.4.12"
   gem.add_development_dependency "pry-byebug"

@@ -28,6 +28,6 @@ describe "Testing for decode errors for negative int32 fields" do
   end
 
   it "should return 100000 given 100000" do
-    expect(validate_pbr(SignedIntTest, 100000, true)).to be_truthy    
+    expect(validate_pbr(SignedIntTest, 100000, true)).to be_truthy
   end
 end
